@@ -1,1 +1,178 @@
+version: '3.1'
 
+services:
+  homarr:
+    image: ghcr.io/ajnart/homarr:latest
+    container_name: homarr
+    restart: unless-stopped
+    ports:
+      - 7575:7575
+    volumes:
+      - ./server_data/homarr/configs:/app/data/configs
+      - ./server_data/homarr/icons:/app/public/icons
+      - ./server_data/homarr/logs:/app/data/logs
+
+  homarr_db:
+    image: postgres:13
+    container_name: homarr_db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=homarr
+      - POSTGRES_PASSWORD=homarr
+      - POSTGRES_DB=homarr
+    volumes:
+      - ./server_data/homarr/db:/var/lib/postgresql/data
+
+  lidarr:
+    image: lscr.io/linuxserver/lidarr:latest
+    container_name: lidarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    volumes:
+      - ./server_data/lidarr/data:/config
+      - ./server_data/lidarr/music:/music #optional
+      - ./server_data/torrent/downloads:/downloads #optional
+    ports:
+      - 8686:8686
+    restart: unless-stopped
+
+  kasm:
+    image: lscr.io/linuxserver/kasm:latest
+    container_name: kasm
+    privileged: true
+    environment:
+      - KASM_PORT=443
+      - DOCKER_HUB_USERNAME=USER #optional
+      - DOCKER_HUB_PASSWORD=PASS #optional
+      - DOCKER_MTU=1500 #optional
+    volumes:
+      - ./server_data/kasm/data:/opt
+      - ./server_data/kasm/profiles:/profiles #optional
+      # - /dev/input:/dev/input #optional
+      # - /run/udev/data:/run/udev/data #optional
+    ports:
+      - 3000:3000
+      - 443:443
+    restart: unless-stopped
+
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    volumes:
+      - ./server_data/sonarr/data:/config
+      - ./server_data/sonarr/tvseries:/tv #optional
+      - ./server_data/torrent/downloads:/downloads #optional
+    ports:
+      - 8989:8989
+    restart: unless-stopped
+
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    volumes:
+      - ./server_data/radarr/data:/config
+      - ./server_data/radarr/movies:/movies #optional
+      - ./server_data/torrent/downloads:/downloads #optional
+    ports:
+      - 7878:7878
+    restart: unless-stopped
+
+  jackett:
+    image: lscr.io/linuxserver/jackett:latest
+    container_name: jackett
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    volumes:
+      - ./server_data/jackett/config:/config
+      - ./server_data/torrent/downloads:/downloads #optional
+    ports:
+      - 9117:9117
+    restart: unless-stopped
+
+  readarr:
+    image: linuxserver/readarr:0.3.6-develop
+    container_name: readarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    volumes:
+      - ./server_data/readarr/data:/config
+      - ./server_data/readarr/books:/books #optional
+      - ./server_data/torrent/downloads:/downloads #optional
+    ports:
+      - 8787:8787
+    restart: unless-stopped
+
+  jellyseer:
+    image: fallenbagel/jellyseerr
+    container_name: jellyseer
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    volumes:
+      - ./server_data/jellyseer/config:/config
+      - ./server_data/torrent/downloads:/downloads #optional
+    ports:
+      - 8096:8096
+    restart: unless-stopped
+
+  overseerr:
+    image: linuxserver/overseerr
+    container_name: overseerr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    volumes:
+      - ./server_data/overseerr/config:/config
+      - ./server_data/torrent/downloads:/downloads #optional
+    ports:
+      - 5055:5055
+    restart: unless-stopped
+
+
+  sabnzbd:
+    image: lscr.io/linuxserver/sabnzbd:latest
+    container_name: sabnzbd
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    volumes:
+      - ./server_data/nzbget/config:/config
+      - ./server_data/torrent/downloads:/downloads
+    ports:
+      - 8081:8080
+      - 9090:9090
+    restart: unless-stopped
+
+  deluge:
+    image: lscr.io/linuxserver/deluge:latest
+    container_name: deluge
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+      - DELUGE_LOGLEVEL=error #optional
+    volumes:
+      - ./server_data/deluge/config:/config
+      - ./server_data/torrent/downloads:/downloads
+    ports:
+      - 8112:8112
+      - 8881:6881
+      - 8881:6881/udp
+    restart: unless-stopped
